@@ -1,15 +1,26 @@
 "use client"
 import { useState } from "react"
-import { createUserWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase"
 
 export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleSignup = async () => {
-    await createUserWithEmailAndPassword(auth, email, password)
-    alert("Account created!")
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Signup failed")
+
+      localStorage.setItem("token", data.token)
+      alert("Account created successfully!")
+    } catch (err: any) {
+      alert(err.message)
+    }
   }
 
   return (
