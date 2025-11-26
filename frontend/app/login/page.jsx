@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { fetchApi } from "@/lib/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -7,18 +8,10 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Login failed")
-
+      const data = await fetchApi("/login", "POST", { email, password })
       localStorage.setItem("token", data.token)
       alert("Logged in successfully!")
-    } catch (err: any) {
+    } catch (err) {
       alert(err.message)
     }
   }
@@ -26,27 +19,23 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center mt-24">
       <h1 className="text-3xl font-bold">Log In</h1>
-
       <input
-        className="border p-2 mt-4"
+        className="border p-2 mt-4 w-64"
         placeholder="Email"
         onChange={(e) => setEmail(e.target.value)}
       />
-
       <input
-        className="border p-2 mt-2"
+        className="border p-2 mt-2 w-64"
         placeholder="Password"
         type="password"
         onChange={(e) => setPassword(e.target.value)}
       />
-
       <button
         onClick={handleLogin}
-        className="bg-black text-white px-4 py-2 rounded mt-4"
+        className="bg-black text-white px-4 py-2 rounded mt-4 w-64"
       >
         Log In
       </button>
     </div>
   )
 }
-
