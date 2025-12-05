@@ -13,17 +13,24 @@ export default function ProblemsPage() {
   const [error, setError] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [difficulty, setDifficulty] = useState("")
+  const [category, setCategory] = useState("")
+  const [search, setSearch] = useState("")
   const LIMIT = 5
 
   useEffect(() => {
+    setCurrentPage(1)
+  }, [difficulty, category, search])
+
+  useEffect(() => {
     fetchProblems()
-  }, [currentPage])
+  }, [currentPage, difficulty, category, search])
 
   const fetchProblems = async () => {
     setLoading(true)
     setError("")
     try {
-      const data = await getProblems(currentPage, LIMIT)
+      const data = await getProblems(currentPage, LIMIT, { difficulty, category, search })
       setProblems(data.problems || [])
       setTotalPages(data.pages || 1)
     } catch (err) {
@@ -75,7 +82,58 @@ export default function ProblemsPage() {
           <p className="text-lg text-gray-600">Solve problems and compete with other coders</p>
         </motion.div>
 
-
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 p-6 rounded-xl bg-white border border-gray-200"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="text"
+              placeholder="Search problems..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+            />
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="">All Categories</option>
+              <option value="Arrays">Arrays</option>
+              <option value="Strings">Strings</option>
+              <option value="Linked Lists">Linked Lists</option>
+              <option value="Stacks">Stacks</option>
+              <option value="Dynamic Programming">Dynamic Programming</option>
+              <option value="Graph">Graph</option>
+              <option value="Design">Design</option>
+              <option value="Math">Math</option>
+              <option value="Backtracking">Backtracking</option>
+            </select>
+            <button
+              onClick={() => {
+                setSearch("")
+                setDifficulty("")
+                setCategory("")
+              }}
+              className="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </motion.div>
 
         {/* Error State */}
         {error && (
