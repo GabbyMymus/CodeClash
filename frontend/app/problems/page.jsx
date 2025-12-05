@@ -4,34 +4,26 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
-import { Search, Filter, Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { getProblems } from "@/lib/api"
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [difficulty, setDifficulty] = useState("all")
-  const [category, setCategory] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const LIMIT = 10
+  const LIMIT = 5
 
   useEffect(() => {
     fetchProblems()
-  }, [currentPage, difficulty, category, searchTerm])
+  }, [currentPage])
 
   const fetchProblems = async () => {
     setLoading(true)
     setError("")
     try {
-      const filters = {}
-      if (difficulty !== "all") filters.difficulty = difficulty
-      if (category !== "all") filters.category = category
-      if (searchTerm) filters.search = searchTerm
-
-      const data = await getProblems(currentPage, LIMIT, filters)
+      const data = await getProblems(currentPage, LIMIT)
       setProblems(data.problems || [])
       setTotalPages(data.pages || 1)
     } catch (err) {
@@ -40,12 +32,6 @@ export default function ProblemsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getDifficultyColor = (diff) => {
-    if (diff === "easy") return "text-green-600 bg-green-50"
-    if (diff === "medium") return "text-yellow-600 bg-yellow-50"
-    return "text-red-600 bg-red-50"
   }
 
   const containerVariants = {
@@ -59,6 +45,19 @@ export default function ProblemsPage() {
   const itemVariants = {
     hidden: { opacity: 0, x: -20 },
     visible: { opacity: 1, x: 0 },
+  }
+
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case "easy":
+        return "bg-green-100 text-green-700"
+      case "medium":
+        return "bg-yellow-100 text-yellow-700"
+      case "hard":
+        return "bg-red-100 text-red-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
   }
 
   return (
@@ -76,62 +75,7 @@ export default function ProblemsPage() {
           <p className="text-lg text-gray-600">Solve problems and compete with other coders</p>
         </motion.div>
 
-        {/* Search & Filters */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8 flex flex-col gap-4 md:flex-row md:items-end"
-        >
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search problems..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-black/5"
-            />
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <select
-              value={difficulty}
-              onChange={(e) => {
-                setDifficulty(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="px-4 py-3 rounded-lg border border-gray-200 bg-white"
-            >
-              <option value="all">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <select
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value)
-                setCurrentPage(1)
-              }}
-              className="px-4 py-3 rounded-lg border border-gray-200 bg-white"
-            >
-              <option value="all">All Categories</option>
-              <option value="Array">Array</option>
-              <option value="String">String</option>
-              <option value="Math">Math</option>
-              <option value="Dynamic Programming">Dynamic Programming</option>
-              <option value="Graph">Graph</option>
-            </select>
-          </div>
-        </motion.div>
 
         {/* Error State */}
         {error && (
@@ -159,8 +103,8 @@ export default function ProblemsPage() {
               animate="visible"
               className="space-y-3"
             >
-              {filteredProblems.length > 0 ? (
-                filteredProblems.map((problem) => (
+              {problems.length > 0 ? (
+                problems.map((problem) => (
                   <motion.div
                     key={problem.id}
                     variants={itemVariants}
