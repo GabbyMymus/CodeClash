@@ -3,7 +3,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { fetchApi } from "@/lib/api"
+import { authApi } from "@/lib/api"
+import { Mail, Lock, Github, Chrome, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 
 export default function AuthCard({ mode = "login" }) {
   const router = useRouter()
@@ -12,6 +13,10 @@ export default function AuthCard({ mode = "login" }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [show, setShow] = useState(false)
+  const [success, setSuccess] = useState(false)
+
+  const isValidEmail = email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+  const isValidPassword = password.length >= 6
 
   const submit = async () => {
     setError("")
@@ -19,12 +24,25 @@ export default function AuthCard({ mode = "login" }) {
       setError("Please fill out all fields")
       return
     }
+    if (!isValidEmail) {
+      setError("Please enter a valid email")
+      return
+    }
+    if (!isValidPassword) {
+      setError("Password must be at least 6 characters")
+      return
+    }
     setLoading(true)
     try {
       const endpoint = mode === "login" ? "/login" : "/signup"
-      const data = await fetchApi(endpoint, "POST", { email, password })
+      const data = await authApi(endpoint, "POST", { email, password })
+      setSuccess(true)
       localStorage.setItem("token", data.token)
-      router.push("/")
+      // Store user data (email and elo)
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user))
+      }
+      setTimeout(() => router.push("/"), 800)
     } catch (err) {
       setError(err?.message || "Something went wrong")
     } finally {
@@ -32,94 +50,185 @@ export default function AuthCard({ mode = "login" }) {
     }
   }
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !loading) {
+      submit()
+    }
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8"
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="w-full max-w-md mx-auto"
     >
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-        {mode === "login" ? "Welcome back" : "Create your account"}
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
-        {mode === "login"
-          ? "Sign in to continue to CodeClash"
-          : "Join CodeClash and start battling with friends"}
-      </p>
-
-      <div className="flex flex-col gap-3">
-        <label className="text-xs text-gray-500">Email</label>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="you@domain.com"
-          className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black"
-        />
-
-        <div>
-          <div className="flex items-center justify-between">
-            <label className="text-xs text-gray-500">Password</label>
-            <button
-              onClick={() => setShow((s) => !s)}
-              className="text-xs text-gray-400"
-              type="button"
-            >
-              {show ? "Hide" : "Show"}
-            </button>
-          </div>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type={show ? "text" : "password"}
-            placeholder="Enter a strong password"
-            className="w-full p-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black mt-1"
-          />
+      <div className="bg-white rounded-2xl shadow-xl backdrop-blur-sm border border-gray-100 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent mb-2"
+          >
+            {mode === "login" ? "Welcome back" : "Join the battle"}
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="text-sm text-gray-600"
+          >
+            {mode === "login"
+              ? "Sign in to continue to CodeClash"
+              : "Create your account and start competing"}
+          </motion.p>
         </div>
 
-        {error && <div className="text-xs text-red-600">{error}</div>}
+        {/* Form Fields */}
+        <div className="flex flex-col gap-4 mb-6">
+          {/* Email Input */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <label className="block text-xs font-semibold text-gray-700 mb-2">Email</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
+                type="email"
+                placeholder="you@domain.com"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all duration-200"
+              />
+              {email && isValidEmail && (
+                <CheckCircle2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+              )}
+            </div>
+          </motion.div>
 
-        <button
+          {/* Password Input */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25, duration: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold text-gray-700">Password</label>
+              <button
+                onClick={() => setShow((s) => !s)}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                type="button"
+              >
+                {show ? "Hide" : "Show"}
+              </button>
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
+                type={show ? "text" : "password"}
+                placeholder={mode === "login" ? "Enter your password" : "Create a strong password"}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all duration-200"
+              />
+              {password && isValidPassword && (
+                <CheckCircle2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+              )}
+            </div>
+            {mode === "signup" && password && !isValidPassword && (
+              <p className="text-xs text-gray-500 mt-1">At least 6 characters required</p>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 flex items-gap-2"
+          >
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-600 ml-2">{error}</p>
+          </motion.div>
+        )}
+
+        {/* Submit Button */}
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
           onClick={submit}
-          disabled={loading}
-          className="mt-2 w-full py-3 rounded-lg bg-black text-white font-medium disabled:opacity-60"
+          disabled={loading || success}
+          className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-lg"
         >
-          {loading
-            ? mode === "login"
-              ? "Signing in..."
-              : "Creating..."
-            : mode === "login"
-            ? "Sign in"
-            : "Create account"}
-        </button>
+          {success ? (
+            <>
+              <CheckCircle2 className="w-5 h-5" />
+              Success!
+            </>
+          ) : loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              {mode === "login" ? "Signing in..." : "Creating..."}
+            </>
+          ) : (
+            mode === "login" ? "Sign in" : "Create account"
+          )}
+        </motion.button>
 
-        <div className="flex items-center gap-2 mt-2">
-          <div className="h-px bg-gray-200 flex-1" />
-          <div className="text-xs text-gray-400">or</div>
-          <div className="h-px bg-gray-200 flex-1" />
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="h-px bg-gradient-to-r from-gray-200 to-transparent flex-1" />
+          <span className="text-xs text-gray-500 font-medium">or continue with</span>
+          <div className="h-px bg-gradient-to-l from-gray-200 to-transparent flex-1" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          <button className="py-2 rounded-lg border flex items-center justify-center text-sm font-medium">
-            Continue with GitHub
-          </button>
-          <button className="py-2 rounded-lg border flex items-center justify-center text-sm font-medium">
-            Continue with Google
-          </button>
+        {/* Social Auth Buttons */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="py-3 rounded-xl border border-gray-200 flex items-center justify-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200"
+            type="button"
+          >
+            <Github className="w-4 h-4" />
+            GitHub
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="py-3 rounded-xl border border-gray-200 flex items-center justify-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-200"
+            type="button"
+          >
+            <Chrome className="w-4 h-4" />
+            Google
+          </motion.button>
         </div>
 
-        <div className="text-xs text-gray-500 mt-4 text-center">
+        {/* Footer Link */}
+        <p className="text-xs text-gray-600 text-center">
           {mode === "login" ? (
             <>
-              New to CodeClash? <Link href="/signup" className="text-black font-medium">Create account</Link>
+              New to CodeClash?{" "}
+              <Link href="/signup" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                Create account
+              </Link>
             </>
           ) : (
             <>
-              Already have an account? <Link href="/login" className="text-black font-medium">Sign in</Link>
+              Already have an account?{" "}
+              <Link href="/login" className="font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+                Sign in
+              </Link>
             </>
           )}
-        </div>
+        </p>
       </div>
     </motion.div>
   )
