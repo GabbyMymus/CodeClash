@@ -72,3 +72,33 @@ export async function deleteUserAccount() {
   return authApi("/profile", "DELETE", null)
 }
 
+// Friends endpoints
+export async function getFriends() {
+  return fetchApi("", "GET", null, "/api/friends")
+}
+
+export async function getPendingRequests() {
+  return fetchApi("/requests", "GET", null, "/api/friends")
+}
+
+export async function getAllUsers(searchTerm = "") {
+  const endpoint = searchTerm ? `/users?search=${encodeURIComponent(searchTerm)}` : "/users"
+  return fetchApi(endpoint, "GET", null, "/api/friends")
+}
+
+export async function sendFriendRequest(friendId) {
+  return fetchApi("/request", "POST", { friendId }, "/api/friends")
+}
+
+export async function acceptFriendRequest(requestId) {
+  return fetchApi(`/accept/${requestId}`, "POST", null, "/api/friends")
+}
+
+export async function declineFriendRequest(requestId) {
+  return fetchApi(`/decline/${requestId}`, "DELETE", null, "/api/friends")
+}
+
+export async function removeFriend(friendshipId) {
+  return fetchApi(`/${friendshipId}`, "DELETE", null, "/api/friends")
+}
+

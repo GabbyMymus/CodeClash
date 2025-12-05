@@ -59,6 +59,11 @@ export default function Navbar() {
           <Link href="/leaderboard" className="text-gray-600 hover:text-black transition">
             Leaderboard
           </Link>
+          {isLoggedIn && (
+            <Link href="/friends" className="text-gray-600 hover:text-black transition">
+              Friends
+            </Link>
+          )}
 
           {/* Admin Link */}
           {isAdmin && (
