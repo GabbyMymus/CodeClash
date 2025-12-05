@@ -34,7 +34,7 @@ export async function getUserProfile() {
   return authApi("/profile", "GET", null)
 }
 
-export async function getLeaderboard(limit = 100) {
+export async function getLeaderboard(limit = 10) {
   return authApi(`/leaderboard?limit=${limit}`, "GET", null)
 }
 
