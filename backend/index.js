@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import authRoutes from "./routes/authRoutes.js"
 import problemRoutes from "./routes/problemRoutes.js"
+import friendRoutes from "./routes/friendRoutes.js"
 
 
 dotenv.config()
@@ -20,6 +21,7 @@ app.use(express.json())
 // Routes
 app.use("/api/auth", authRoutes)
 app.use("/api/problems", problemRoutes)
+app.use("/api/friends", friendRoutes)
 
 
 const PORT = process.env.PORT || 3001

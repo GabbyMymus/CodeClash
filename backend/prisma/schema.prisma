@@ -9,12 +9,31 @@ datasource db {
 
 
 model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String?
+  elo               Int      @default(1200)
+  isAdmin           Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  
+  // Relations for friends
+  friendsInitiated  Friend[] @relation("FriendshipInitiator")
+  friendsReceived   Friend[] @relation("FriendshipReceiver")
+}
+
+model Friend {
   id          String   @id @default(uuid())
-  email       String   @unique
-  password    String?
-  elo         Int      @default(1200)
-  isAdmin     Boolean  @default(false)
+  userId      String
+  friendId    String
+  status      String   @default("pending") // "pending", "accepted"
   createdAt   DateTime @default(now())
+  
+  user        User     @relation("FriendshipInitiator", fields: [userId], references: [id], onDelete: Cascade)
+  friend      User     @relation("FriendshipReceiver", fields: [friendId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
 }
 
 model Problem {
