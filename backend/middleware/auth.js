@@ -15,4 +15,5 @@ export const verifyUser = (req, res, next) => {
   }
 }
 
+export const auth = verifyUser
 

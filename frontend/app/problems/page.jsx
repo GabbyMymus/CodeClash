@@ -94,33 +94,33 @@ export default function ProblemsPage() {
               placeholder="Search problems..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-black placeholder-gray-600"
             />
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-black"
             >
-              <option value="">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="" className="text-black">All Difficulties</option>
+              <option value="easy" className="text-black">Easy</option>
+              <option value="medium" className="text-black">Medium</option>
+              <option value="hard" className="text-black">Hard</option>
             </select>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-black"
             >
-              <option value="">All Categories</option>
-              <option value="Arrays">Arrays</option>
-              <option value="Strings">Strings</option>
-              <option value="Linked Lists">Linked Lists</option>
-              <option value="Stacks">Stacks</option>
-              <option value="Dynamic Programming">Dynamic Programming</option>
-              <option value="Graph">Graph</option>
-              <option value="Design">Design</option>
-              <option value="Math">Math</option>
-              <option value="Backtracking">Backtracking</option>
+              <option value="" className="text-black">All Categories</option>
+              <option value="Arrays" className="text-black">Arrays</option>
+              <option value="Strings" className="text-black">Strings</option>
+              <option value="Linked Lists" className="text-black">Linked Lists</option>
+              <option value="Stacks" className="text-black">Stacks</option>
+              <option value="Dynamic Programming" className="text-black">Dynamic Programming</option>
+              <option value="Graph" className="text-black">Graph</option>
+              <option value="Design" className="text-black">Design</option>
+              <option value="Math" className="text-black">Math</option>
+              <option value="Backtracking" className="text-black">Backtracking</option>
             </select>
             <button
               onClick={() => {

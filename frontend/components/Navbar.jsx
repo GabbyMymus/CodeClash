@@ -3,24 +3,41 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LogOut, LogIn } from "lucide-react"
+import { LogOut, LogIn, Settings } from "lucide-react"
+import { getUserProfile } from "@/lib/api"
 
 export default function Navbar() {
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem("token")
     setIsLoggedIn(!!token)
-    setLoading(false)
+    
+    if (token) {
+      // Check if user is admin
+      getUserProfile()
+        .then(user => {
+          setIsAdmin(user.isAdmin || false)
+        })
+        .catch(err => {
+          console.error("Failed to get user profile:", err)
+          setIsAdmin(false)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
   }, [])
 
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("user")
     setIsLoggedIn(false)
+    setIsAdmin(false)
     router.push("/login")
   }
 
@@ -42,6 +59,14 @@ export default function Navbar() {
           <Link href="/leaderboard" className="text-gray-600 hover:text-black transition">
             Leaderboard
           </Link>
+
+          {/* Admin Link */}
+          {isAdmin && (
+            <Link href="/admin/problems" className="text-gray-600 hover:text-black transition flex items-center gap-2">
+              <Settings size={18} />
+              Admin
+            </Link>
+          )}
 
           {/* Auth Buttons */}
           {isLoggedIn ? (
